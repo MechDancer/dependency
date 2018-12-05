@@ -1,19 +1,15 @@
 package org.mechdancer.dependency
 
-/** 计算类型的哈希值 */
-inline fun <reified C : Component> hashOf() =
-    C::class.java.hashCode()
-
 /** 找到一种 [C] 类型的依赖 */
-inline fun <reified C : Component> Set<Component>.get(): List<C> =
+inline fun <reified C : Component> Iterable<Component>.get(): List<C> =
     mapNotNull { it as? C }
 
 /** 找到一种 [C] 类型的依赖 */
-inline fun <reified C : Component> Set<Component>.maybe(): C? =
+inline fun <reified C : Component> Iterable<Component>.maybe(): C? =
     get<C>().singleOrNull()
 
 /** 找到一种 [C] 类型的依赖 */
-inline fun <reified C : Component> Set<Component>.must(): C =
+inline fun <reified C : Component> Iterable<Component>.must(): C =
     maybe() ?: throw ComponentNotExistException(C::class)
 
 /** 向动态域添加新的依赖项 */
