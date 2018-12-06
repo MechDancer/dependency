@@ -1,6 +1,7 @@
 package org.mechdancer.dependency.unique
 
 import org.mechdancer.dependency.Component
+import java.lang.reflect.ParameterizedType
 import kotlin.reflect.KClass
 import kotlin.reflect.full.safeCast
 
@@ -11,7 +12,14 @@ import kotlin.reflect.full.safeCast
  *   泛型 [T] 可保证此类型来自这个实现类
  */
 abstract class UniqueComponent<T : UniqueComponent<T>>
-    (private val type: KClass<T>) : Component {
+    (type: KClass<T>? = null) : Component {
+
+    private val type = type ?: (javaClass.genericSuperclass as? ParameterizedType)
+        ?.let { type ->
+            type.actualTypeArguments
+                .find { t -> t is Class<*> && UniqueComponent::class.java.isAssignableFrom(t) }
+                ?.let { it as Class<*> }
+        }?.kotlin ?: throw RuntimeException("Unable to find component type.")
 
     override fun equals(other: Any?) =
         this === other || type.safeCast(other) !== null

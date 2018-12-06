@@ -8,6 +8,7 @@ sudo: true
 before_install:
 # 赋予执行权限
 - chmod a+x gradlew
+- chmod a+x deploy.sh
 
 script:
 # 清理、生成、测试、文档
@@ -32,7 +33,7 @@ deploy:
     tags:       true
 
 - provider: script
-  script: ./gradlew clean build dokka bintrayUpload -PbintrayUser $bintrayUser -PbintrayKey $bintrayKey -PdryRun=false
+  script: bash ./deploy.sh
   on:
     tags: true
 
