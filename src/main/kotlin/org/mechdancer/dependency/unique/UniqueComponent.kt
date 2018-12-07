@@ -14,12 +14,14 @@ import kotlin.reflect.full.safeCast
 abstract class UniqueComponent<T : UniqueComponent<T>>
     (type: KClass<T>? = null) : Component {
 
-    private val type = type ?: (javaClass.genericSuperclass as? ParameterizedType)
-        ?.let { type ->
-            type.actualTypeArguments
-                .find { t -> t is Class<*> && UniqueComponent::class.java.isAssignableFrom(t) }
-                ?.let { it as Class<*> }
-        }?.kotlin ?: throw RuntimeException("Unable to find component type.")
+    val type = type
+        ?: (javaClass.genericSuperclass as? ParameterizedType)
+            ?.actualTypeArguments
+            ?.asSequence()
+            ?.mapNotNull { it as? Class<*> }
+            ?.find { t -> UniqueComponent::class.java.isAssignableFrom(t) }
+            ?.kotlin
+        ?: throw RuntimeException("Unable to find component type.")
 
     override fun equals(other: Any?) =
         this === other || type.safeCast(other) !== null
