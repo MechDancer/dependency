@@ -12,13 +12,13 @@ import kotlin.reflect.full.safeCast
  *   泛型 [T] 可保证此类型来自这个实现类
  */
 abstract class UniqueComponent<T : UniqueComponent<T>>
-(type: KClass<T>? = null) : Component {
+    (type: KClass<T>? = null) : Component {
 
     val type = type ?: javaClass.kotlin.firstGenericType(UniqueComponent::class)
 
     override fun equals(other: Any?) =
-            this === other || type.safeCast(other) !== null
+        this === other || type.safeCast(other) !== null
 
     override fun hashCode() =
-            type.hashCode()
+        type.hashCode()
 }
