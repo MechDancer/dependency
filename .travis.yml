@@ -1,41 +1,38 @@
 language: java
 
 jdk:
-- oraclejdk8
+  - openjdk8
 
 sudo: true
 
 before_install:
-# 赋予执行权限
-- chmod a+x gradlew
-- chmod a+x deploy.sh
+  - chmod a+x gradlew
 
 script:
-# 清理、生成、测试、文档
-  - ./gradlew clean build dokka
+  - ./gradlew check allJars
 
 before_cache:
-- rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-- rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
-  - $HOME/.gradle/caches/
-  - $HOME/.gradle/wrapper/
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
 
 deploy:
-# 发布到 GitHub Release
-- provider:     releases
-  skip_cleanup: true
-  file_glob:    true
-  file:         "build/libs/*"
-  api_key:      $GitHubToken
-  on:
-    tags:       true
-
-- provider: script
-  script: bash ./deploy.sh
-  on:
-    tags: true
+  - provider:     releases
+    skip_cleanup: true
+    file_glob:    true
+    file:         "build/libs/*"
+    api_key:      $GitHubToken
+    on:
+      tags:       true
+      branch:     master
+  - provider:     script
+    script: ./gradlew bintrayUpload
+    on:
+      tags:       true
+      branch:     master
 
 notifications:
-  webhooks: https://oapi.dingtalk.com/robot/send?access_token=4b59c5ece57fc88af8fda28cc07573c4caf525aa69afc0cc888ccf3ce6dbe41b
+  webhooks: https://oapi.dingtalk.com/robot/send?access_token=0b88acd27818f66fb787144ebc43749f7806dc1a89901c26b9ef7d6107d50133

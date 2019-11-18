@@ -1,1 +1,0 @@
-./gradlew clean build dokka bintrayUpload -PbintrayUser $bintrayUser -PbintrayKey $bintrayKey -PdryRun=false
