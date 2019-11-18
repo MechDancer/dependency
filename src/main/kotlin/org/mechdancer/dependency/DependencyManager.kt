@@ -9,16 +9,16 @@ import kotlin.reflect.KProperty
 /**
  * 典型依赖管理器
  */
-class DependencyManager {
+open class DependencyManager {
     // 尚未装载的依赖项集
-    private val dependencies = mutableListOf<TypeSafeDependency<*>>()
+    protected val dependencies = mutableListOf<TypeSafeDependency<*>>()
 
     // 添加依赖项到集合，发生冲突时产生异常
-    private fun <T : Component> add(dependency: TypeSafeDependency<T>) =
+    protected fun <T : Component> add(dependency: TypeSafeDependency<T>) =
         synchronized(dependencies) { dependencies.add(dependency) }
 
     /** 每一次扫描都清除成功装载的依赖项 */
-    fun sync(dependency: Component) =
+    open fun sync(dependency: Component) =
         synchronized(dependencies) {
             dependencies.removeIf { it.set(dependency) != null } && dependencies.isEmpty()
         }
