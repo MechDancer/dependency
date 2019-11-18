@@ -37,11 +37,6 @@ class C : AnnotatedDependent() {
     @Name("B")
     var b: B? = null
 
-    @Maybe
-    @Name("C")
-    // 不会被注入
-    var d: B = B()
-
     override fun equals(other: Any?): Boolean = false
 
     override fun hashCode(): Int = 233
@@ -65,6 +60,5 @@ class TestAnnotated {
         }
         Assert.assertEquals(a0, c.a)
         Assert.assertEquals(b1, c.b)
-        println(c.d)
     }
 }

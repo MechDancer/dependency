@@ -13,28 +13,6 @@ import kotlin.reflect.jvm.jvmErasure
 @Suppress("UNCHECKED_CAST")
 abstract class AnnotatedDependent : Dependent {
 
-    private val manager = DependencyManagerListenable().also {
-        it.onDependencySetup = { dependency ->
-            when (dependency) {
-                is TypeSafeDependency.Dependency<*>     -> {
-                    synchronized(strictPropertiesMap) {
-                        strictPropertiesMap[dependency]?.javaField!!
-                            .also { f -> f.isAccessible = true }.set(this, dependency.field)
-                        strictPropertiesMap.remove(dependency)
-                    }
-                }
-                is TypeSafeDependency.WeakDependency<*> -> {
-                    synchronized(weakPropertiesMap) {
-                        weakPropertiesMap[dependency]?.javaField!!
-                            .also { f -> f.isAccessible = true }.set(this, dependency.field)
-                        weakPropertiesMap.remove(dependency)
-                    }
-                }
-            }
-
-        }
-    }
-
     private val strictPropertiesMap = mutableMapOf<TypeSafeDependency<*>, KProperty1<*, *>>()
     private val weakPropertiesMap = mutableMapOf<TypeSafeDependency<*>, KProperty1<*, *>>()
 
@@ -51,7 +29,7 @@ abstract class AnnotatedDependent : Dependent {
             .filter { it.javaField!!.isAnnotationPresent(Must::class.java) }
             .associateBy {
                 val name = it.getName()
-                manager.dependOnStrict(it.returnType.jvmErasure as KClass<out Component>) { component ->
+                TypeSafeDependency.Dependency(it.returnType.jvmErasure as KClass<out Component>) { component ->
                     component.toPredicate(name)
                 }
             }
@@ -59,13 +37,11 @@ abstract class AnnotatedDependent : Dependent {
 
         allFields
             // 优先满足非空
-            .sortedBy { it.returnType.isMarkedNullable }
             .filter { it.javaField!!.isAnnotationPresent(Maybe::class.java) }
-            // 可存在默认值
-            // .apply { forEach { require(it.returnType.isMarkedNullable) { "Weak dependencies must be nullable." } } }
+            .sortedBy { it.returnType.isMarkedNullable }
             .associateBy {
                 val name = it.getName()
-                manager.dependOnWeak(it.returnType.jvmErasure as KClass<out Component>) { component ->
+                TypeSafeDependency.WeakDependency(it.returnType.jvmErasure as KClass<out Component>) { component ->
                     component.toPredicate(name)
                 }
             }
@@ -73,7 +49,28 @@ abstract class AnnotatedDependent : Dependent {
 
     }
 
-    override fun sync(dependency: Component): Boolean = manager.sync(dependency)
+    override fun sync(dependency: Component): Boolean {
+        (strictPropertiesMap.keys.find { it.set(dependency) != null }
+            ?: weakPropertiesMap.keys.find { it.set(dependency) != null })?.let {
+            when (it) {
+                is TypeSafeDependency.Dependency<*>     -> {
+                    synchronized(strictPropertiesMap) {
+                        strictPropertiesMap[it]?.javaField!!
+                            .also { f -> f.isAccessible = true }.set(this, it.field)
+                        strictPropertiesMap.remove(it)
+                    }
+                }
+                is TypeSafeDependency.WeakDependency<*> -> {
+                    synchronized(weakPropertiesMap) {
+                        weakPropertiesMap[it]?.javaField!!
+                            .also { f -> f.isAccessible = true }.set(this, it.field)
+                        weakPropertiesMap.remove(it)
+                    }
+                }
+            }
+        }
+        return weakPropertiesMap.isEmpty() && strictPropertiesMap.isEmpty()
+    }
 
 }
 
