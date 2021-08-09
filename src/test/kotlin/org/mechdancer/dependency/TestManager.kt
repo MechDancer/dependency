@@ -15,7 +15,7 @@ class D : Dependent {
     override fun equals(other: Any?): Boolean = false
     override fun hashCode(): Int = 0
 
-    val manager = DependencyManager()
+    private val manager = DependencyManager()
 
     val error by manager.maybe<E>("error")
 

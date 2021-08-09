@@ -9,8 +9,9 @@ import kotlin.reflect.safeCast
  * 同类型的组件不能共存
  */
 abstract class UniqueComponent<T : UniqueComponent<T>>
-(type: KClass<T>? = null) : Component {
+    (type: KClass<T>? = null) : Component {
 
+    @Suppress("MemberVisibilityCanBePrivate")
     val type = type ?: javaClass.kotlin.firstGenericType(UniqueComponent::class)
 
     override fun equals(other: Any?) =

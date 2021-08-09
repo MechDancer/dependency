@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package org.mechdancer.dependency
 
 import java.lang.reflect.ParameterizedType
@@ -15,7 +17,7 @@ inline fun <reified C : Component> Iterable<Component>.maybe(): C? =
 inline fun <reified C : Component> Iterable<Component>.must(): C =
     maybe() ?: throw ComponentNotExistException(C::class)
 
-/** 向动态域添加新的依赖项 */
+/** 向动态域添加新依赖项 */
 operator fun DynamicScope.plusAssign(component: Component) {
     setup(component)
 }

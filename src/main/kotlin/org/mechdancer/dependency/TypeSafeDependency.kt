@@ -27,12 +27,12 @@ sealed class TypeSafeDependency<T : Component>(
     open val field: T? get() = _field.get()
 
     /** 类型 [T] 的弱依赖项 */
-    class WeakDependency<T : Component>(type: KClass<T>, predicate: (T) -> Boolean)
-        : TypeSafeDependency<T>(type, predicate)
+    class WeakDependency<T : Component>(type: KClass<T>, predicate: (T) -> Boolean) :
+        TypeSafeDependency<T>(type, predicate)
 
     /** 类型 [T] 的强依赖项 */
-    class Dependency<T : Component>(type: KClass<T>, predicate: (T) -> Boolean)
-        : TypeSafeDependency<T>(type, predicate) {
+    class Dependency<T : Component>(type: KClass<T>, predicate: (T) -> Boolean) :
+        TypeSafeDependency<T>(type, predicate) {
         override val field: T get() = super.field ?: throw ComponentNotExistException(type)
     }
 

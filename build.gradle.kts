@@ -1,7 +1,7 @@
 plugins { kotlin("jvm") version "1.5.21" }
 
 group = "org.mechdancer"
-version = "0.1.0-rc-3"
+version = "0.1.0-rc-4"
 
 repositories { mavenCentral() }
 dependencies {
@@ -13,7 +13,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:+")
 }
 
-java { withSourcesJar() }
+java { withSourcesJar(); withJavadocJar() }
 tasks.withType<JavaCompile> { options.encoding = "UTF-8" }
 tasks.test { useJUnitPlatform() }
 

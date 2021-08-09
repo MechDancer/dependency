@@ -9,7 +9,7 @@ import kotlin.reflect.safeCast
  * 同类型且同名的组件不可共存
  */
 abstract class NamedComponent<T : NamedComponent<T>>
-(val name: String, type: KClass<T>? = null) : Component {
+    (val name: String, type: KClass<T>? = null) : Component {
 
     @Suppress("UNCHECKED_CAST")
     val type = type ?: javaClass.kotlin.firstGenericType(NamedComponent::class) as KClass<T>

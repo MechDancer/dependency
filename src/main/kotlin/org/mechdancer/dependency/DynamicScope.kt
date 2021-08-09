@@ -15,11 +15,12 @@ open class DynamicScope {
     private val _components = ConcurrentHashSet<Component>()
 
     //依赖者列表
-    //  用于在在新的依赖项到来时接收通知
+    //  用于在在新依赖项到来时接收通知
     //  其中的组件一旦集齐依赖项就会离开列表，不再接收通知
     private val dependents = mutableListOf<(Component) -> Boolean>()
 
     /** 浏览所有组件 */
+    @Suppress("unused")
     val components = _components.view
 
     /**

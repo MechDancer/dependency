@@ -40,16 +40,20 @@ class DependencyManager {
         dependOnWeak(C::class, predicate)
 
     /** 从一个 [C] 类型的强依赖取值 */
-    inline fun <reified C : Component, T> must(noinline predicate: (C) -> Boolean,
-                                               crossinline block: (C) -> T): Lazy<T> {
+    inline fun <reified C : Component, T> must(
+        noinline predicate: (C) -> Boolean,
+        crossinline block: (C) -> T
+    ): Lazy<T> {
         val dependency = dependency(predicate)
         return lazy { dependency.field.let(block) }
     }
 
     /** 从一个 [C] 类型的弱依赖取值 */
-    inline fun <reified C : Component, T> maybe(noinline predicate: (C) -> Boolean,
-                                                default: T,
-                                                crossinline block: (C) -> T): Lazy<T> {
+    inline fun <reified C : Component, T> maybe(
+        noinline predicate: (C) -> Boolean,
+        default: T,
+        crossinline block: (C) -> T
+    ): Lazy<T> {
         val dependency = weakDependency(predicate)
         return lazy { dependency.field?.let(block) ?: default }
     }
