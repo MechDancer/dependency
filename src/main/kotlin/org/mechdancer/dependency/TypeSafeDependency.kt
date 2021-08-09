@@ -2,7 +2,7 @@ package org.mechdancer.dependency
 
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.reflect.KClass
-import kotlin.reflect.full.safeCast
+import kotlin.reflect.safeCast
 
 /**
  * 依赖项

@@ -1,7 +1,7 @@
 package org.mechdancer.dependency
 
 import kotlin.reflect.KClass
-import kotlin.reflect.full.safeCast
+import kotlin.reflect.safeCast
 
 /**
  * 唯一组件

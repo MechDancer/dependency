@@ -1,7 +1,7 @@
 package org.mechdancer.dependency
 
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 
 class E(name: String) : NamedComponent<E>(name) {
     val value = 20
@@ -35,9 +35,9 @@ class TestManager {
             this += d
             this += F
         }
-        Assert.assertEquals(d.error, null)
-        Assert.assertEquals(d.truly, "E")
-        Assert.assertEquals(d.value, 20)
-        Assert.assertEquals(d.f, F)
+        assertEquals(d.error, null)
+        assertEquals(d.truly, "E")
+        assertEquals(d.value, 20)
+        assertEquals(d.f, F)
     }
 }
