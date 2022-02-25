@@ -18,7 +18,7 @@ abstract class TreeComponent(
     protected fun <T : TreeComponent> T.attach() =
         this@attach.also(this@TreeComponent._children::plusAssign)
 
-    private val ancestors: List<TreeComponent> = parent?.ancestors?.plus(parent) ?: listOf()
+    val ancestors: List<TreeComponent> = parent?.ancestors?.plus(parent) ?: listOf()
     val children = object : List<TreeComponent> by _children {}
 
 

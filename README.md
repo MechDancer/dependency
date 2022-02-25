@@ -102,7 +102,8 @@ It is unique component, and can measure the distance to wall. A remote control c
 robot:
 
 ```kotlin
-class RemoteControl : Dependent, UniqueComponent<RemoteControl>(), ManagedHandler by managedHandler() {
+class RemoteControl : Dependent, UniqueComponent<RemoteControl>(),
+    ManagedHandler by managedHandler() {
     private val chassis: Chassis by manager.must()
     private val distanceSensor: DistanceSensor by manager.must()
 
@@ -135,3 +136,66 @@ val remoteControl = robot.components.must<RemoteControl>().translateRobot(x)
 
 We set up everything to the `DynamicScope`, and the scope will help us deal with all dependencies.
 No references passed through constructors, nor worries about instantiation orders!
+
+## Manager style
+
+We have seen how the manager was used to declare dependency. `ManagedHandler by managedHandler()` is
+trivial, and the following two code snippets are identical:
+
+Manually:
+
+```kotlin
+class AAA : UniqueComponent<AAA>()
+class BBB : Dependent, UniqueComponent<BBB>() {
+    val manager = DependencyManager()
+    val aaa: AAA by manager.must()
+    override fun handle(dependency: Component): Boolean = manager.handle(dependency)
+}
+```
+
+`managedHandler()`:
+
+```kotlin
+class AAA : UniqueComponent<AAA>()
+class BBB : Dependent, UniqueComponent<BBB>(), ManagedHandler by managedHandler() {
+    val aaa: AAA by manager.must()
+}
+```
+
+## Annotation style
+
+The library also provides an annotation style dependency injection:
+
+```kotlin
+class AAA : UniqueComponent<AAA>()
+class CCC(name: String) : NamedComponent<CCC>(name)
+class BBB : Dependent, UniqueComponent<BBB>() {
+
+    @Must
+    lateinit var aaa: AAA
+
+    @Maybe
+    @Name("ccc1")
+    var ccc: CCC? = null
+
+    @Must
+    lateinit var ccc2: CCC
+
+    private val injector by annotatedInjector()
+
+    override fun handle(dependency: Component): Boolean = injector.handle(dependency)
+
+}
+
+scope {
+    setup(AAA())
+    setup(CCC("ccc1"))
+    setup(CCC("ccc2"))
+    setup(BBB())
+}
+```
+
+We need use `annotatedInjector()` to create an injector for the dependent, and manually
+delegate `hanlde` method to the injector. `@Must` declares a strict dependency with the type of the
+field, and `@Maybe` declares a weak dependency. `@Name` can specify dependency's name. Field's name
+will be used if no `@Name` annotated. 
