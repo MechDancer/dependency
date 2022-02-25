@@ -53,7 +53,7 @@ publishing {
         }
     }
     repositories {
-        maven("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        maven("https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
             name = "Sonatype"
             credentials {
                 username = properties.getOrDefault("sonatypeUsername", "")?.toString()
