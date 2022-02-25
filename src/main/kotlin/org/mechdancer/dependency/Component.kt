@@ -1,15 +1,17 @@
 package org.mechdancer.dependency
 
 /**
- * 组件
- *
- * 通过类型反射、哈希值和判等条件与其他组件区分开
- * 因此组件可以安全快捷地保存到一个哈希集合中
+ * [Component] can be discriminated from each other
+ * It needs implement [equals] and [hashCode] correctly to be saved into a hash set.
  */
 interface Component {
-    /** 判断能否与[other]共存 */
+    /**
+     * Compatibility with [other] components
+     */
     override fun equals(other: Any?): Boolean
 
-    /** 计算组件哈希值 */
+    /**
+     * Hash code of this component
+     */
     override fun hashCode(): Int
 }

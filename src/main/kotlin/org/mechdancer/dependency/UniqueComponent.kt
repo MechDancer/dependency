@@ -4,14 +4,12 @@ import kotlin.reflect.KClass
 import kotlin.reflect.safeCast
 
 /**
- * 唯一组件
+ * [UniqueComponent] is a type of [Component] associated with unique type [T]
  *
- * 同类型的组件不能共存
+ * [UniqueComponent]s with the same type can not coexist in the scope
  */
-abstract class UniqueComponent<T : UniqueComponent<T>>
-    (type: KClass<T>? = null) : Component {
+abstract class UniqueComponent<T : UniqueComponent<T>>(type: KClass<T>? = null) : Component {
 
-    @Suppress("MemberVisibilityCanBePrivate")
     val type = type ?: javaClass.kotlin.firstGenericType(UniqueComponent::class)
 
     override fun equals(other: Any?) =
