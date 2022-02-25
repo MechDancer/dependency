@@ -4,12 +4,12 @@ import kotlin.reflect.KClass
 import kotlin.reflect.safeCast
 
 /**
- * 具名组件
+ * [NamedComponent] is a type of [Component] associated with unique [name] and [T]
  *
- * 同类型且同名的组件不可共存
+ * [NamedComponent]s with the same type and name can not coexist in the scope
  */
 abstract class NamedComponent<T : NamedComponent<T>>
-    (val name: String, type: KClass<T>? = null) : Component {
+(val name: String, type: KClass<T>? = null) : Component {
 
     @Suppress("UNCHECKED_CAST")
     val type = type ?: javaClass.kotlin.firstGenericType(NamedComponent::class) as KClass<T>

@@ -1,12 +1,10 @@
 package org.mechdancer.dependency
 
 /**
- * 依赖者
+ * [Dependent] is a type of [Component] which needs other components as dependencies
  *
- * 依赖者的内容不完整，需要获得依赖项的支持
- * 因此当一个新依赖项到达，依赖者会得到通知，直到所有依赖项都集齐为止
+ * [handle] will be called when a new component arrives [DynamicScope], until all dependencies are retrieved.
  */
-interface Dependent : Component {
-    /** 向依赖者展示新的依赖项[dependency]，并返回是否已获得全部依赖项 */
-    fun sync(dependency: Component): Boolean
+interface Dependent : Component, DependencyHandler {
+    override fun handle(dependency: Component): Boolean
 }

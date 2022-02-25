@@ -3,9 +3,10 @@ package org.mechdancer.dependency
 import kotlin.reflect.KClass
 
 /**
- * 组件不存在异常
+ * [ComponentNotExistException] is the exception indicates that failed to find
+ * the component with a specific type
  *
- * @param which 要找的组件类型
+ * @param type Type of the component
  */
-class ComponentNotExistException(which: KClass<out Component>) :
-    RuntimeException("Cannot find this component: ${which.qualifiedName}")
+class ComponentNotExistException(type: KClass<out Component>) :
+    RuntimeException("Cannot find this component: ${type.qualifiedName}")

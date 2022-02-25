@@ -5,11 +5,10 @@ import kotlin.reflect.KClass
 import kotlin.reflect.safeCast
 
 /**
- * 依赖项
+ * Dependency declaration
  *
- * 具体到类型 [T] 并依类型判别冲突
- * 保存到组件实例的引用
- * 线程安全
+ * It holds the type [T] and the reference of the [Component].
+ * The implementation is thread-safe.
  */
 sealed class TypeSafeDependency<T : Component>(
     val type: KClass<T>,
@@ -17,22 +16,36 @@ sealed class TypeSafeDependency<T : Component>(
 ) {
     private val _field = AtomicReference<T?>(null)
 
-    /** 尝试置入值 [value]，若无法转换到目标类型则不产生作用 */
+    /**
+     * Try to set [value]
+     *
+     * Fail if unable to cast [value] to desired type or the predication fails
+     */
     fun set(value: Component): T? =
         _field.updateAndGet {
             type.safeCast(value)?.takeIf(predicate) ?: it
         }
 
-    /** 尝试获取值 */
+    /**
+     * Try to get the value
+     */
     open val field: T? get() = _field.get()
 
-    /** 类型 [T] 的弱依赖项 */
+    /**
+     * Weak dependency with type [T]
+     */
     class WeakDependency<T : Component>(type: KClass<T>, predicate: (T) -> Boolean) :
         TypeSafeDependency<T>(type, predicate)
 
-    /** 类型 [T] 的强依赖项 */
+    /**
+     * Strict dependency with type [T]
+     */
     class Dependency<T : Component>(type: KClass<T>, predicate: (T) -> Boolean) :
         TypeSafeDependency<T>(type, predicate) {
+        /**
+         * Try to get the value
+         * @throws ComponentNotExistException if unable to get
+         */
         override val field: T get() = super.field ?: throw ComponentNotExistException(type)
     }
 
