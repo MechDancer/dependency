@@ -2,7 +2,9 @@ package org.mechdancer.dependency.manager
 
 import org.mechdancer.dependency.INamedComponent
 import org.mechdancer.dependency.IUniqueComponent
+import org.mechdancer.dependency.UniqueComponentWrapper
 import kotlin.reflect.KClass
+import kotlin.reflect.full.isSubclassOf
 
 /**
  * Create a interface delegate of [ManagedHandler]
@@ -158,3 +160,26 @@ inline fun <reified C : IUniqueComponent<C>>
  */
 inline fun <reified C : INamedComponent<C>>
     DependencyManager.maybe(name: String) = maybe<C> { it.name == name }
+
+/**
+ * Declare a strict [UniqueComponentWrapper] dependency with type [C] that wrappers type [T],
+ * creating a delegate that obtains its value
+ *
+ * @return a property delegate
+ */
+inline fun <reified C : UniqueComponentWrapper<T>, reified T>
+    DependencyManager.mustWrapped() = must<C, T>({ it.type.isSubclassOf(T::class) }) { it.wrapped }
+
+/**
+ * Declare a weak [UniqueComponentWrapper] dependency with type [C] that wrappers type [T],
+ * creating a delegate that obtains its value
+ *
+ * @return a property delegate
+ */
+inline fun <reified C : UniqueComponentWrapper<T>, reified T>
+    DependencyManager.maybeWrapped() = must<C, T>({ it.type.isSubclassOf(T::class) }) { it.wrapped }
+
+/**
+ * Wrap [this] to a unique component
+ */
+fun Any.wrapToUniqueComponent() = UniqueComponentWrapper(this)
