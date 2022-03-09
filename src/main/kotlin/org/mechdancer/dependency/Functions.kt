@@ -1,7 +1,9 @@
 package org.mechdancer.dependency
 
-import java.lang.reflect.ParameterizedType
 import kotlin.reflect.KClass
+import kotlin.reflect.full.isSubtypeOf
+import kotlin.reflect.full.starProjectedType
+import kotlin.reflect.jvm.jvmErasure
 
 /**
  * Find a list dependencies with type [C]
@@ -60,14 +62,29 @@ inline fun scope(block: DynamicScope.() -> Unit) =
     DynamicScope().apply(block)
 
 /**
- * Find first generic type that has an upper bound [upper]
- * @receiver Type that has a generic type to be found
+ * Find generic type in super class hierarchies which has is subtype of [upper] recursively
+ * For example, we have the following two classes:
+ * ```kotlin
+ *  abstract class Foo<T : Foo<T>>
+ *  class Bar : Foo<Bar>()
+ *```
+ * And we can find type parameter `T` instantiated with `Bar`:
+ * ```kotlin
+ *  val bar = Bar()
+ *  // This returns KClass of Bar
+ *  bar.javaClass.kotlin.findSuperGenericTypeRecursively(Foo::class))
+ * ```
  */
-fun KClass<*>.firstGenericType(upper: KClass<*>) =
-    (java.genericSuperclass as? ParameterizedType)
-        ?.actualTypeArguments
-        ?.asSequence()
-        ?.mapNotNull { it as? Class<*> }
-        ?.find { t -> upper.java.isAssignableFrom(t) }
-        ?.kotlin
-        ?: throw RuntimeException("Unable to find component type.")
+@Suppress("UNCHECKED_CAST")
+fun <T : Any> KClass<*>.findSuperGenericTypeRecursively(upper: KClass<T>): KClass<out T> =
+    supertypes
+        .find { it.isSubtypeOf(upper.starProjectedType) }
+        ?.arguments
+        ?.firstNotNullOfOrNull {
+            it.type?.takeIf { type -> type.isSubtypeOf(upper.starProjectedType) }
+        }
+        ?.jvmErasure as? KClass<out T>
+        ?: supertypes.firstNotNullOfOrNull {
+            (it as? KClass<*>)?.findSuperGenericTypeRecursively(upper)
+        }
+        ?: throw RuntimeException("Unable to find generic type.")

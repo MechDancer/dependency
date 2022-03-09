@@ -22,7 +22,7 @@ class AnnotatedInjector<T : Any>(private val dependent: T, type: KClass<T>) : Sc
             javaField!!.annotations.firstNotNullOfOrNull { it as? Name }?.name
 
         fun Component.toPredicate(name: String?) =
-            if (this is NamedComponent<*>)
+            if (this is INamedComponent<*>)
                 name == this.name
             else true
 
