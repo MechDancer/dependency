@@ -10,11 +10,15 @@ import org.mechdancer.dependency.manager.managedHandler
 import org.mechdancer.dependency.manager.mustWrapped
 import org.mechdancer.dependency.manager.wrapToUniqueComponent
 
-class J
+open class Common
+
+class J : Common()
 
 class K : UniqueComponent<K>(), Dependent, ManagedHandler by managedHandler() {
     val j: J by manager.mustWrapped()
     val int: Int by manager.mustWrapped()
+    val m: M by manager.mustWrapped()
+    val common: Common by manager.mustWrapped()
 }
 
 class L : UniqueComponent<L>(), Dependent {
@@ -28,8 +32,14 @@ class L : UniqueComponent<L>(), Dependent {
     @Must
     var int: Int? = null
 
+    @Unwrap
+    @Must
+    var common: Common? = null
+
     override fun handle(scopeEvent: ScopeEvent) = injector.handle(scopeEvent)
 }
+
+class M : Common()
 
 class TestWrapped {
     @Test
@@ -38,15 +48,22 @@ class TestWrapped {
         val k = K()
         val int = 233
         val l = L()
+        val common = Common()
+        val m = M()
         scope {
             this += j.wrapToUniqueComponent()
             this += int.wrapToUniqueComponent()
             this += k
             this += l
+            this += common.wrapToUniqueComponent()
+            this += m.wrapToUniqueComponent()
         }
         Assert.assertEquals(j, k.j)
         Assert.assertEquals(int, k.int)
         Assert.assertEquals(j, l.j)
         Assert.assertEquals(int, l.int)
+        Assert.assertEquals(m, k.m)
+        Assert.assertEquals(common, l.common)
+        Assert.assertEquals(common, k.common)
     }
 }

@@ -4,8 +4,6 @@ import org.mechdancer.dependency.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
-import kotlin.reflect.full.isSupertypeOf
-import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.jvmErasure
 
@@ -38,9 +36,8 @@ class AnnotatedInjector<T : Any>(private val dependent: T, type: KClass<T>) : Sc
                     else it.returnType.jvmErasure as KClass<out Component>
                 ) { component ->
                     (if (needsUnwrap)
-                        component is UniqueComponentWrapper<*> && it.returnType.isSupertypeOf(
-                            component.type.starProjectedType
-                        )
+                        (component is UniqueComponentWrapper<*> && it.returnType.jvmErasure ==
+                            component.type)
                     else
                         true) && component.toPredicate(name)
                 }.also { dep ->
@@ -72,9 +69,8 @@ class AnnotatedInjector<T : Any>(private val dependent: T, type: KClass<T>) : Sc
                     else it.returnType.jvmErasure as KClass<out Component>
                 ) { component ->
                     (if (needsUnwrap)
-                        component is UniqueComponentWrapper<*> && it.returnType.isSupertypeOf(
-                            component.type.starProjectedType
-                        )
+                        component is UniqueComponentWrapper<*> && it.returnType.jvmErasure ==
+                            component.type
                     else
                         true) && component.toPredicate(name)
                 }.also { dep ->

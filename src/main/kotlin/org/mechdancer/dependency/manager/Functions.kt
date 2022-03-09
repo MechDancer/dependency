@@ -4,7 +4,6 @@ import org.mechdancer.dependency.INamedComponent
 import org.mechdancer.dependency.IUniqueComponent
 import org.mechdancer.dependency.UniqueComponentWrapper
 import kotlin.reflect.KClass
-import kotlin.reflect.full.isSubclassOf
 
 /**
  * Create a interface delegate of [ManagedHandler]
@@ -168,7 +167,7 @@ inline fun <reified C : INamedComponent<C>>
  * @return a property delegate
  */
 inline fun <reified C : UniqueComponentWrapper<T>, reified T>
-    DependencyManager.mustWrapped() = must<C, T>({ it.type.isSubclassOf(T::class) }) { it.wrapped }
+    DependencyManager.mustWrapped() = must<C, T>({ it.type == T::class }) { it.wrapped }
 
 /**
  * Declare a weak [UniqueComponentWrapper] dependency with type [C] that wrappers type [T],
@@ -177,9 +176,9 @@ inline fun <reified C : UniqueComponentWrapper<T>, reified T>
  * @return a property delegate
  */
 inline fun <reified C : UniqueComponentWrapper<T>, reified T>
-    DependencyManager.maybeWrapped() = must<C, T>({ it.type.isSubclassOf(T::class) }) { it.wrapped }
+    DependencyManager.maybeWrapped() = must<C, T>({ it.type == T::class }) { it.wrapped }
 
 /**
  * Wrap [this] to a unique component
  */
-fun Any.wrapToUniqueComponent() = UniqueComponentWrapper(this)
+inline fun <reified T : Any> T.wrapToUniqueComponent() = UniqueComponentWrapper(this)
