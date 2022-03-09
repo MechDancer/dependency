@@ -1,7 +1,6 @@
 package org.mechdancer.dependency
 
 import org.mechdancer.dependency.utils.ConcurrentHashSet
-import java.util.concurrent.ConcurrentLinkedQueue
 
 /**
  * [DynamicScope] is a scope that accepts components dynamically
@@ -10,23 +9,13 @@ import java.util.concurrent.ConcurrentLinkedQueue
 open class DynamicScope {
     /**
      * Component set
-     * We look up specific types of components from here.
-     * There's no chance to remove a component.
      */
-    private val _components = ConcurrentHashSet<Component>()
-
-    /**
-     * Dependent list
-     * Dependents' [Dependent.handle] will be called once new component arrives.
-     * Dependents will be removed from the list once they are satisfied, i.e., their [Dependent.handle]
-     * return `true`.
-     */
-    private val dependents = ConcurrentLinkedQueue<(Component) -> Boolean>()
+    protected val components = ConcurrentHashSet<Component>()
 
     /**
      * Get a view of all components
      */
-    val components = _components.view
+    fun viewComponents() = components.view
 
     /**
      * Add a new [component] to the scope
@@ -34,24 +23,36 @@ open class DynamicScope {
      * @return If [component] is already in scope
      */
     open infix fun setup(component: Component) =
-        _components
+        components
             .add(component)
             .also {
-                // Update the status of dependents
-                if (it)
-                    dependents.removeIf { it(component) }
+                components.forEach {
+                    if (it is Dependent)
+                        it.handle(ScopeEvent.DependencyArrivedEvent(component))
+                    if (component is Dependent)
+                        component.handle(ScopeEvent.DependencyArrivedEvent(it))
+                }
+            }
 
-                if (component is Dependent)
-                    component::handle
-                        .takeIf { handle -> _components.none(handle) }
-                        ?.let(dependents::add)
+    /**
+     * Remove [component] from the scope
+     *
+     * @return If [component] is in the scope
+     */
+    open infix fun teardown(component: Component) =
+        components
+            .remove(component)
+            .also {
+                components.forEach {
+                    if (it is Dependent)
+                        it.handle(ScopeEvent.DependencyLeftEvent(component))
+                }
             }
 
     /**
      * Clear everything
      */
     fun clear() {
-        _components.clear()
-        dependents.clear()
+        components.clear()
     }
 }

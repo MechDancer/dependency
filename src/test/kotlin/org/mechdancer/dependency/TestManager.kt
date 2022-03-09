@@ -10,7 +10,7 @@ class E(name: String) : NamedComponent<E>(name) {
     override fun toString(): String = "E"
 }
 
-object F : UniqueComponent<F>(){
+object F : UniqueComponent<F>() {
     override fun toString(): String = "F"
 }
 
@@ -39,7 +39,7 @@ class TestManager {
             this += d
             this += F
         }.also {
-            println(it.components.joinToString())
+            println(it.viewComponents().joinToString())
         }
         Assert.assertEquals(d.error, null)
         Assert.assertEquals(d.truly, "E")

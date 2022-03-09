@@ -42,7 +42,7 @@ class RRR : Dependent {
 
     override fun hashCode(): Int = javaClass.hashCode()
 
-    override fun handle(dependency: Component): Boolean = injector.handle(dependency)
+    override fun handle(scopeEvent: ScopeEvent) = injector.handle(scopeEvent)
 }
 
 class TestDuplicate {
