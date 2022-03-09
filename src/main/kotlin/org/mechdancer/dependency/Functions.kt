@@ -31,6 +31,13 @@ operator fun DynamicScope.plusAssign(component: Component) {
 }
 
 /**
+ * Operator of [DynamicScope.teardown]
+ */
+operator fun DynamicScope.minusAssign(component: Component) {
+    teardown(component)
+}
+
+/**
  * Add a [component] to the scope, executing [block] if success
  */
 inline fun <T : Component> DynamicScope.setup(component: T, block: T.() -> Unit) {
@@ -49,7 +56,7 @@ fun DynamicScope.setupRecursively(root: TreeComponent) {
 /**
  * Create a [DynamicScope]
  */
-fun scope(block: DynamicScope.() -> Unit) =
+inline fun scope(block: DynamicScope.() -> Unit) =
     DynamicScope().apply(block)
 
 /**

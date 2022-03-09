@@ -14,7 +14,14 @@ sealed class TypeSafeDependency<T : Component>(
     val type: KClass<T>,
     private val predicate: (T) -> Boolean
 ) {
-    private val _field = AtomicReference<T?>(null)
+    private var onSetListener: ((T) -> Unit)? = null
+
+    protected val fieldRef = AtomicReference<T?>(null)
+
+    /**
+     * Try to get the value
+     */
+    fun fieldOrNull() = fieldRef.get()
 
     /**
      * Try to set [value]
@@ -22,20 +29,39 @@ sealed class TypeSafeDependency<T : Component>(
      * Fail if unable to cast [value] to desired type or the predication fails
      */
     fun set(value: Component): T? =
-        _field.updateAndGet {
+        fieldRef.updateAndGet {
             type.safeCast(value)?.takeIf(predicate) ?: it
-        }
+        }?.also { onSetListener?.invoke(it) }
 
     /**
-     * Try to get the value
+     * Called when [fieldRef] was successfully set
      */
-    open val field: T? get() = _field.get()
+    fun setOnSetListener(listener: ((T) -> Unit)? = null) {
+        onSetListener = listener
+    }
 
     /**
      * Weak dependency with type [T]
      */
     class WeakDependency<T : Component>(type: KClass<T>, predicate: (T) -> Boolean) :
-        TypeSafeDependency<T>(type, predicate)
+        TypeSafeDependency<T>(type, predicate) {
+        private var onClearListener: (() -> Unit)? = null
+
+        /**
+         * Called when [fieldRef] was successfully cleared
+         */
+        fun setOnClearListener(listener: (() -> Unit)? = null) {
+            onClearListener = listener
+        }
+
+        /**
+         * Clear [fieldRef]
+         */
+        fun clear() {
+            fieldRef.set(null)
+            onClearListener?.invoke()
+        }
+    }
 
     /**
      * Strict dependency with type [T]
@@ -46,9 +72,11 @@ sealed class TypeSafeDependency<T : Component>(
          * Try to get the value
          * @throws ComponentNotExistException if unable to get
          */
-        override val field: T get() = super.field ?: throw ComponentNotExistException(type)
+        val field: T get() = super.fieldOrNull() ?: throw ComponentNotExistException(type)
     }
 
-    override fun equals(other: Any?) = this === other || (other as? TypeSafeDependency<*>)?.type == type
+    override fun equals(other: Any?) =
+        this === other || (other as? TypeSafeDependency<*>)?.type == type
+
     override fun hashCode() = type.hashCode()
 }

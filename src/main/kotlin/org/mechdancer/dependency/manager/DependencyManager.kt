@@ -1,9 +1,6 @@
 package org.mechdancer.dependency.manager
 
-import org.mechdancer.dependency.Component
-import org.mechdancer.dependency.DependencyHandler
-import org.mechdancer.dependency.Dependent
-import org.mechdancer.dependency.TypeSafeDependency
+import org.mechdancer.dependency.*
 import org.mechdancer.dependency.TypeSafeDependency.Dependency
 import org.mechdancer.dependency.TypeSafeDependency.WeakDependency
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -14,10 +11,10 @@ import kotlin.reflect.KProperty
 /**
  * Canonical dependency manager
  */
-class DependencyManager : DependencyHandler {
+class DependencyManager : ScopeEventHandler {
 
     /**
-     * The set of unsatisfied dependencies
+     * The set of dependencies
      */
     private val dependencies = ConcurrentLinkedQueue<TypeSafeDependency<*>>()
 
@@ -29,11 +26,25 @@ class DependencyManager : DependencyHandler {
     private fun <T : Component> add(dependency: TypeSafeDependency<T>) =
         dependencies.add(dependency)
 
-    /**
-     * Fill [dependency] to [dependencies], and remove satisfied elements from [dependencies]
-     */
-    override fun handle(dependency: Component) =
-        dependencies.removeIf { it.set(dependency) != null } && dependencies.isEmpty()
+    override fun handle(scopeEvent: ScopeEvent) {
+        when (scopeEvent) {
+            is ScopeEvent.DependencyArrivedEvent -> dependencies.forEach {
+                if (it.fieldOrNull() == null)
+                    it.set(scopeEvent.dependency)
+            }
+            is ScopeEvent.DependencyLeftEvent -> dependencies.filter {
+                it.fieldOrNull() == scopeEvent.dependency
+            }.forEach {
+                when (it) {
+                    is Dependency -> throw TeardownStrictDependencyException(
+                        scopeEvent.dependency,
+                        it
+                    )
+                    is WeakDependency -> it.clear()
+                }
+            }
+        }
+    }
 
     /**
      * Declare a strict dependency with type [C]
@@ -93,7 +104,7 @@ class DependencyManager : DependencyHandler {
         crossinline block: (C) -> T
     ): Lazy<T> {
         val dependency = weakDependency(predicate)
-        return lazy { dependency.field?.let(block) ?: default }
+        return lazy { dependency.fieldOrNull()?.let(block) ?: default }
     }
 
     /**
@@ -117,6 +128,6 @@ class DependencyManager : DependencyHandler {
     inline fun <reified C : Component> maybe(noinline predicate: (C) -> Boolean) =
         object : ReadOnlyProperty<Dependent, C?> {
             private val core = weakDependency(predicate)
-            override fun getValue(thisRef: Dependent, property: KProperty<*>) = core.field
+            override fun getValue(thisRef: Dependent, property: KProperty<*>) = core.fieldOrNull()
         }
 }

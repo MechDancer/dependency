@@ -43,7 +43,7 @@ class C : Dependent{
 
     override fun hashCode(): Int = 233
 
-    override fun handle(dependency: Component): Boolean = injector.handle(dependency)
+    override fun handle(scopeEvent: ScopeEvent) = injector.handle(scopeEvent)
 
 }
 

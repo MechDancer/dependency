@@ -1,10 +1,10 @@
 package org.mechdancer.dependency.manager
 
-import org.mechdancer.dependency.Component
-import org.mechdancer.dependency.DependencyHandler
+import org.mechdancer.dependency.ScopeEvent
+import org.mechdancer.dependency.ScopeEventHandler
 
 /**
- * An implementation of [DependencyHandler] using [DependencyManager]
+ * An implementation of [ScopeEventHandler] using [DependencyManager]
  *
  * An example:
  * ```kotlin
@@ -14,10 +14,10 @@ import org.mechdancer.dependency.DependencyHandler
  * }
  * ```
  */
-interface ManagedHandler : DependencyHandler {
+interface ManagedHandler : ScopeEventHandler {
     val manager: DependencyManager
 
-    override fun handle(dependency: Component): Boolean = manager.handle(dependency)
+    override fun handle(scopeEvent: ScopeEvent) = manager.handle(scopeEvent)
 }
 
 
