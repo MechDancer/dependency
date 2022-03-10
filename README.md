@@ -1,4 +1,5 @@
 # dependency
+![Maven Central](https://img.shields.io/maven-central/v/org.mechdancer/dependency)
 
 [Legacy README](README.legacy.md)
 
