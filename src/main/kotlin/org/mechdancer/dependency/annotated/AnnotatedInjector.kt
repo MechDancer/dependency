@@ -22,7 +22,7 @@ class AnnotatedInjector<T : Any>(private val dependent: T, type: KClass<T>) : Sc
             javaField!!.annotations.firstNotNullOfOrNull { it as? Name }?.name
 
         fun Component.toPredicate(name: String?) =
-            if (this is NamedComponent<*>)
+            if (this is INamedComponent<*>)
                 name == this.name
             else true
 
@@ -30,13 +30,24 @@ class AnnotatedInjector<T : Any>(private val dependent: T, type: KClass<T>) : Sc
             .filter { it.javaField?.isAnnotationPresent(Must::class.java) ?: false }
             .map {
                 val name = it.getName()
-                TypeSafeDependency.Dependency(it.returnType.jvmErasure as KClass<out Component>) { component ->
-                    component.toPredicate(name)
+                val needsUnwrap = it.javaField!!.isAnnotationPresent(Unwrap::class.java)
+                TypeSafeDependency.Dependency(
+                    if (needsUnwrap) UniqueComponentWrapper::class
+                    else it.returnType.jvmErasure as KClass<out Component>
+                ) { component ->
+                    (if (needsUnwrap)
+                        (component is UniqueComponentWrapper<*> && it.returnType.jvmErasure ==
+                            component.type)
+                    else
+                        true) && component.toPredicate(name)
                 }.also { dep ->
                     dep.setOnSetListener { component ->
                         it.javaField!!.apply {
                             isAccessible = true
-                            set(dependent, component)
+                            if (needsUnwrap && component is UniqueComponentWrapper<*>)
+                                set(dependent, component.wrapped)
+                            else
+                                set(dependent, component)
                         }
                     }
                 }
@@ -52,13 +63,24 @@ class AnnotatedInjector<T : Any>(private val dependent: T, type: KClass<T>) : Sc
                 if (!it.returnType.isMarkedNullable)
                     throw RuntimeException("$it was annotated with Maybe, but ut is not a nullable property")
                 val name = it.getName()
-                TypeSafeDependency.WeakDependency(it.returnType.jvmErasure as KClass<out Component>) { component ->
-                    component.toPredicate(name)
+                val needsUnwrap = it.javaField!!.isAnnotationPresent(Unwrap::class.java)
+                TypeSafeDependency.WeakDependency(
+                    if (needsUnwrap) UniqueComponentWrapper::class
+                    else it.returnType.jvmErasure as KClass<out Component>
+                ) { component ->
+                    (if (needsUnwrap)
+                        component is UniqueComponentWrapper<*> && it.returnType.jvmErasure ==
+                            component.type
+                    else
+                        true) && component.toPredicate(name)
                 }.also { dep ->
                     dep.setOnSetListener { component ->
                         it.javaField!!.apply {
                             isAccessible = true
-                            set(dependent, component)
+                            if (needsUnwrap && component is UniqueComponentWrapper<*>)
+                                set(dependent, component.wrapped)
+                            else
+                                set(dependent, component)
                         }
                     }
                     dep.setOnClearListener {

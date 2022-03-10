@@ -24,3 +24,12 @@ annotation class Maybe
 @MustBeDocumented
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Name(val name: String)
+
+/**
+ * Specify that this is a wrapped unique dependency
+ * which needs to be unwrapped
+ */
+@Target(AnnotationTarget.FIELD)
+@MustBeDocumented
+@Retention(AnnotationRetention.RUNTIME)
+annotation class Unwrap

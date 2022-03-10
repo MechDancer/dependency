@@ -1,20 +1,14 @@
 package org.mechdancer.dependency
 
-import kotlin.reflect.KClass
-import kotlin.reflect.safeCast
-
 /**
- * [UniqueComponent] is a type of [Component] associated with unique type [T]
- *
- * [UniqueComponent]s with the same type can not coexist in the scope
+ * Class version of [IUniqueComponent] for convenience
  */
-abstract class UniqueComponent<T : UniqueComponent<T>>(type: KClass<T>? = null) : Component {
+abstract class UniqueComponent<T : UniqueComponent<T>> :
+    IUniqueComponent<T> {
 
-    val type = type ?: javaClass.kotlin.firstGenericType(UniqueComponent::class)
+    override val type by lazy { defaultType() }
 
-    override fun equals(other: Any?) =
-        this === other || type.safeCast(other) !== null
+    override fun equals(other: Any?) = defaultEquals(other)
 
-    override fun hashCode() =
-        type.hashCode()
+    override fun hashCode() = defaultHashCode()
 }
