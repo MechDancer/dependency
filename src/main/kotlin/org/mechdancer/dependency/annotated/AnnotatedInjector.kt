@@ -36,6 +36,7 @@ class AnnotatedInjector<T : Any>(private val dependent: T, type: KClass<T>) : Sc
                     else it.returnType.jvmErasure as KClass<out Component>
                 ) { component ->
                     (if (needsUnwrap)
+                    // Invariance: See the note on [UniqueComponentWrapper]
                         (component is UniqueComponentWrapper<*> && it.returnType.jvmErasure ==
                             component.type)
                     else
@@ -69,6 +70,7 @@ class AnnotatedInjector<T : Any>(private val dependent: T, type: KClass<T>) : Sc
                     else it.returnType.jvmErasure as KClass<out Component>
                 ) { component ->
                     (if (needsUnwrap)
+                    // Invariance: See the note on [UniqueComponentWrapper]
                         component is UniqueComponentWrapper<*> && it.returnType.jvmErasure ==
                             component.type
                     else

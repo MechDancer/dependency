@@ -164,6 +164,8 @@ inline fun <reified C : INamedComponent<C>>
  * Declare a strict [UniqueComponentWrapper] dependency with type [C] that wrappers type [T],
  * creating a delegate that obtains its value
  *
+ * Invariance: See the note on [UniqueComponentWrapper]
+ *
  * @return a property delegate
  */
 inline fun <reified C : UniqueComponentWrapper<T>, reified T>
@@ -172,6 +174,8 @@ inline fun <reified C : UniqueComponentWrapper<T>, reified T>
 /**
  * Declare a weak [UniqueComponentWrapper] dependency with type [C] that wrappers type [T],
  * creating a delegate that obtains its value
+ *
+ * Invariance: See the note on [UniqueComponentWrapper]
  *
  * @return a property delegate
  */
